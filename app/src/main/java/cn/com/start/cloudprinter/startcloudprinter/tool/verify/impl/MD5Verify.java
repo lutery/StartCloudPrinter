@@ -1,11 +1,11 @@
 package cn.com.start.cloudprinter.startcloudprinter.tool.verify.impl;
 
-import cn.com.startprinter.serverprinter2.exception.runtime.VerifyException;
-import cn.com.startprinter.serverprinter2.tool.verify.IVerify;
-import cn.com.startprinter.serverprinter2.tool.verify.VerifyType;
-import cn.com.startprinter.serverprinter2.util.GeneraUtil;
-
 import java.security.NoSuchAlgorithmException;
+
+import cn.com.start.cloudprinter.startcloudprinter.exception.VerifyException;
+import cn.com.start.cloudprinter.startcloudprinter.tool.verify.IVerify;
+import cn.com.start.cloudprinter.startcloudprinter.tool.verify.VerifyType;
+import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 
 public class MD5Verify implements IVerify {
     @Override
@@ -13,7 +13,7 @@ public class MD5Verify implements IVerify {
         boolean verifyRes = false;
 
         try {
-            byte[] infoMd5 = GeneraUtil.bytesToMD5(verifyContent);
+            byte[] infoMd5 = ToolUtil.toMD5Bytes(verifyContent);
 
             for (int i = 0; i < infoMd5.length; ++i){
                 if (verifyCode[i] != infoMd5[i]){
@@ -23,9 +23,6 @@ public class MD5Verify implements IVerify {
 
             verifyRes = true;
 
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -55,7 +52,16 @@ public class MD5Verify implements IVerify {
     @Override
     public byte[] generateVerifyCode(byte[] content) throws NoSuchAlgorithmException {
 
-        return GeneraUtil.bytesToMD5(content);
+        if (content == null || content.length == 0){
+            return new byte[]{
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00
+            };
+        }
+
+        return ToolUtil.toMD5Bytes(content);
     }
 
     @Override

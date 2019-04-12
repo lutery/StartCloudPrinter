@@ -10,6 +10,11 @@ import androidx.core.app.ActivityCompat;
 
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
@@ -17,6 +22,8 @@ import java.util.zip.CRC32;
 
 import chchy.one.checkpermission.PermissionCheck;
 import chchy.one.checkpermission.PermissionResult;
+import cn.com.start.cloudprinter.startcloudprinter.tool.verify.IVerify;
+import cn.com.start.cloudprinter.startcloudprinter.tool.verify.VerifyType;
 
 /**
  * Created by 程辉 on 2017/11/23.
@@ -25,6 +32,57 @@ import chchy.one.checkpermission.PermissionResult;
 public class ToolUtil {
 
     private static final String TAG = ToolUtil.class.getSimpleName();
+
+    public static byte[] getResultMsg(String result, IVerify verifyTool) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+
+
+        try {
+//            String msg = String.format("{\"result\":\"%s\"}", result);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("result", result);
+            String msg = jsonObject.toString();
+
+            byteBuffer.put(ByteBuffer.wrap(new byte[]{0x0f, 0x00, 0x00, 0x00}));
+            byteBuffer.put(ByteBuffer.wrap(ToolUtil.intToBytes(msg.getBytes("gb18030").length)));
+            byteBuffer.put(ByteBuffer.wrap(new byte[]{0x03}));
+            byteBuffer.put(ByteBuffer.wrap(verifyTool.generateVerifyCode(msg.getBytes("gb18030"))));
+            byteBuffer.put(ByteBuffer.wrap(msg.getBytes("gb18030")));
+            byteBuffer.put(ByteBuffer.wrap(new byte[]{0x24}));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        byteBuffer.flip();
+
+        byte[] resultMsgBytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(resultMsgBytes);
+
+        return resultMsgBytes;
+    }
+
+    public static int getVerifyTypeLength(Byte type){
+
+        if (type == VerifyType.CRC8.getType()){
+            return 1;
+        }
+        else if (type == VerifyType.CRC16.getType()){
+            return 2;
+        }
+        else if (type == VerifyType.CRC32.getType()){
+            return 4;
+        }
+        else if (type == VerifyType.MD5.getType()){
+            return 16;
+        }
+
+        return Integer.MAX_VALUE / 2;
+    }
+
 
     public static String getUniqueId(Context context) {
         final SharedPreferences sp = context.getSharedPreferences(ConstantUtil.APP_INFO, Context.MODE_PRIVATE);
@@ -38,6 +96,21 @@ public class ToolUtil {
         }
 
         return deviceid;
+    }
+
+    public static byte[] long2ByteArray(long lVal){
+        byte[] bVals = new byte[8];
+
+        bVals[0] = (byte)((lVal >> 56) & 0xff);
+        bVals[1] = (byte)((lVal >> 48) & 0xff);
+        bVals[2] = (byte)((lVal >> 40) & 0xff);
+        bVals[3] = (byte)((lVal >> 32) & 0xff);
+        bVals[4] = (byte)((lVal >> 24) & 0xff);
+        bVals[5] = (byte)((lVal >> 16) & 0xff);
+        bVals[6] = (byte)((lVal >> 8) & 0xff);
+        bVals[7] = (byte)((lVal >> 0) & 0xff);
+
+        return bVals;
     }
 
     public static byte[] longToBytes(long iVal){
@@ -62,12 +135,22 @@ public class ToolUtil {
         return bVals;
     }
 
-    public static int bytesToInt(byte[] bytes){
+    /**
+     * byte[] 转 int，低位在前，高位在后
+     * @param bs
+     * @return
+     */
+    public static int byteArray2Int(byte... bs){
+        byte[] byteArray = new byte[4];
 
-        return (bytes[0] & 0xff) << 24 |
-                (bytes[1] & 0xff) << 16 |
-                (bytes[2] & 0xff) << 8 |
-                (bytes[3] & 0xff) << 0;
+        for (int i = 0; i < bs.length && i < 4; ++i){
+            byteArray[i] = bs[i];
+        }
+
+        return byteArray[0] & 0xff |
+                (byteArray[1] & 0xff) << 8 |
+                (byteArray[2] & 0xff) << 16 |
+                (byteArray[3] & 0xff) << 24;
     }
 
     public static byte[] toCRC32Bytes(byte[] bytes){

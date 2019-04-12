@@ -10,7 +10,7 @@ public enum PrinterOrder {
     DEVINIT((byte)0x11, (byte)0x00, (byte)0x00, (byte)0x00),
     PRNDATA((byte)0xf0, (byte)0x00, (byte)0x00, (byte)0x00),
     PRNOK((byte)0x0f, (byte)0x00, (byte)0x00, (byte)0x00),
-
+    HEARTBEAT((byte)0xff, (byte)0x00, (byte)0x00, (byte)0x00),
     ;
 
     private byte[] order = new byte[4];

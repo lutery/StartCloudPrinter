@@ -16,12 +16,30 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.event.GeneralEvent;
 import cn.com.start.cloudprinter.startcloudprinter.event.PrintEvent;
+import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DelimiterPrinterOrderFrameDecoder;
+import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrderHandler;
+import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
+import lombok.Getter;
 
 /**
  * Created by 程辉 on 2017/11/28.
@@ -42,16 +60,73 @@ public class PrinterService extends Service {
     private Notification mNotification;
     private NotificationManager mNotificationManager;
 
+    private EventLoopGroup mainGroup;
+    private Bootstrap clientBootstrap;
+    @Getter
+    private static Channel channel;
+
+    // 服务器ip地址
+//    private final String mServerIP = "58.87.111.219";
+    private final String mServerIP = "192.168.2.101";
+
+    // 服务器端口
+    private final int mServerPort = 9100;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         Log.d(CHANNEL_ID, "onCreate");
 
-        Executors.newSingleThreadExecutor().execute(new PrinterRunnable(ToolUtil.getUniqueId(this)));
+//        Executors.newSingleThreadExecutor().execute(new PrinterRunnable(ToolUtil.getUniqueId(this)));
+        Executors.newSingleThreadExecutor().execute(() -> {
+                try {
+                    initNetty();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+        });
         EventBus.getDefault().register(this);
 
         showNotification();
+    }
+
+    private void initNetty() throws InterruptedException {
+        mainGroup = new NioEventLoopGroup();
+
+        clientBootstrap = new Bootstrap().group(mainGroup)
+                .channel(NioSocketChannel.class)
+                .handler(new DeviceInitializer());
+
+        Log.d(TAG, "start connnect server");
+        ChannelFuture channelFuture = clientBootstrap.connect(mServerIP, mServerPort)
+                .addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (future.isSuccess()){
+                            channel = future.channel();
+                            channel.writeAndFlush(sendDevInit());
+                        }
+                        else {
+                            EventBus.getDefault().post(new ExceptionEvent(new Exception("netty连接失败")));
+                        }
+                    }
+                }).sync();
+
+        Log.d(TAG, "disconnect server");
+        channelFuture.channel().closeFuture().sync();
+    }
+
+    private ByteBuf sendDevInit() {
+        ByteBuf byteBuf = Unpooled.buffer(32);
+        Log.d(TAG, "DEVINIT order = " + ToolUtil.byte2HexStr(PrinterOrder.DEVINIT.getOrder()));
+
+        byteBuf.writeBytes(PrinterOrder.DEVINIT.getOrder());
+        byteBuf.writeBytes(new byte[]{0x00, 0x00, 0x00, 0x00});
+        byteBuf.writeBytes(new byte[]{0x03, 0x00, 0x00});
+        byteBuf.writeBytes(new byte[]{0x24});
+
+        return byteBuf;
     }
 
     @Override
@@ -131,5 +206,16 @@ public class PrinterService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    class DeviceInitializer extends ChannelInitializer<SocketChannel>{
+
+        @Override
+        protected void initChannel(SocketChannel ch) {
+            ch.pipeline()
+                    .addLast(new IdleStateHandler(0, 0, 5))
+                    .addLast(new DelimiterPrinterOrderFrameDecoder(4, 4, 1, (byte)0x24))
+                    .addLast(new DeviceOrderHandler());
+        }
     }
 }

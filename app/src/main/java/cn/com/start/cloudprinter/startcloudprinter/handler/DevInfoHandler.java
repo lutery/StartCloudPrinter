@@ -11,26 +11,26 @@ import java.io.UnsupportedEncodingException;
 
 import cn.com.start.cloudprinter.startcloudprinter.StartCloudApplication;
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
+import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
 import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Created by lutery on 2017/12/26.
  */
 
-public class DevInfoHandler extends AbsHandler<BytesRequest> {
+public class DevInfoHandler extends AbsHandler {
 
     private final String TAG = DevInfoHandler.class.getSimpleName();
 
     @Override
-    protected boolean innerHandle(OrderObj orderObj) {
+    protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (orderObj == null){
-            return false;
-        }
-
-        if (orderObj.getOrder()[0] != (byte)0x10){
+        if (deviceOrder.getOrderType()[0] != (byte) 0x10) {
             return false;
         }
 
@@ -56,23 +56,19 @@ public class DevInfoHandler extends AbsHandler<BytesRequest> {
 
         byte[] verifyCode = ToolUtil.toCRC16Bytes(devInfoBytes);
 
-        try {
-            Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(devLength));
-            Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(verifyCode));
-            Log.d(TAG, "devInfoBytes = " + ToolUtil.byte2HexStr(devInfoBytes));
+        Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(devLength));
+        Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(verifyCode));
+        Log.d(TAG, "devInfoBytes = " + ToolUtil.byte2HexStr(devInfoBytes));
 
-            outputStream.write(PrinterOrder.DEVINFO.getOrder());
-            outputStream.write(devLength);
-            outputStream.write(new byte[]{0x03});
-            outputStream.write(verifyCode);
-            outputStream.write(devInfoBytes);
-            outputStream.write(new byte[]{0x24});
-            outputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+        ByteBuf byteBuf = Unpooled.buffer(1024);
+        byteBuf.writeBytes(PrinterOrder.DEVINFO.getOrder());
+        byteBuf.writeBytes(devLength);
+        byteBuf.writeBytes(new byte[]{0x03});
+        byteBuf.writeBytes(verifyCode);
+        byteBuf.writeBytes(devInfoBytes);
+        byteBuf.writeBytes(new byte[]{0x24});
 
-            Log.d(TAG, "发送失败");
-        }
+        channelHandlerContext.writeAndFlush(byteBuf);
 
         Log.d(TAG, "处理结束");
         return true;

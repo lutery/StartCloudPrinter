@@ -73,6 +73,10 @@ public class CRC16XModemVerify implements IVerify {
     @Override
     public byte[] generateVerifyCode(byte[] content) {
 
+        if (content == null || content.length == 0){
+            return new byte[]{0x00, 0x00};
+        }
+
         char crc = 0x0000;
         for (byte b : content) {
             crc = (char) ((crc << 8) ^ CRC16TABLE[((crc >> 8) ^ b) & 0x00ff]);

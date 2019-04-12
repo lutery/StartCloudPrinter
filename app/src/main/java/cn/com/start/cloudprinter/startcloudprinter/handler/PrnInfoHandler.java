@@ -9,25 +9,22 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
-import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
+import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
+import io.netty.channel.ChannelHandlerContext;
 
-public class PrnInfoHandler extends AbsHandler<BytesRequest> {
+public class PrnInfoHandler extends AbsHandler {
 
     private static final String TAG = PrnInfoHandler.class.getSimpleName();
 
     @Override
-    protected boolean innerHandle(OrderObj orderObj) {
+    protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (orderObj == null){
-            return false;
-        }
-
-        if (orderObj.getOrder()[0] != 0x01){
+        if (deviceOrder.getOrderType()[0] != 0x01){
             return false;
         }
 
         try {
-            JSONObject jsonPrnInfo = new JSONObject(new String(orderObj.getContent(), "gb18030"));
+            JSONObject jsonPrnInfo = new JSONObject(new String(deviceOrder.getOrderContent(), "gb18030"));
 
             String prnid = jsonPrnInfo.getString("prnid");
             int size = jsonPrnInfo.getInt("size");

@@ -1,43 +1,58 @@
 package cn.com.start.cloudprinter.startcloudprinter.handler;
 
+import android.util.Log;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
+import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
 import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
+import cn.com.start.cloudprinter.startcloudprinter.util.DeviceStatus;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
 
-public class DevStatusHandler extends AbsHandler<BytesRequest> {
+public class DevStatusHandler extends AbsHandler{
+
+    private final static String TAG = DevStatusHandler.class.getSimpleName();
+
     @Override
-    protected boolean innerHandle(OrderObj orderObj) {
+    protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (orderObj == null){
-            return false;
-        }
-
-        if (orderObj.getOrder()[0] != 0x12){
+        if (deviceOrder.getOrderType()[0] != (byte)0x12){
             return false;
         }
 
         try {
+            DeviceStatus[] deviceStatuses = DeviceStatus.values();
+            DeviceStatus deviceStatus = deviceStatuses[new Random().nextInt(deviceStatuses.length)];
+
             JSONObject statusObj = new JSONObject();
-            statusObj.put("status", 32);
+            statusObj.put("status", deviceStatus.getCode());
 
             String statusStr = statusObj.toString();
 
             byte[] statusBytes= statusStr.getBytes("gb18030");
             byte[] length = ToolUtil.intToBytes(statusBytes.length);
 
-            outputStream.write(new byte[]{(byte)0xf1, 0x00, 0x00, 0x00});
-            outputStream.write(length);
-            outputStream.write(mVerifyTool.verifyType().getType());
-            outputStream.write(mVerifyTool.generateVerifyCode(statusBytes));
-            outputStream.write(statusBytes);
-            outputStream.write((byte)0x24);
+            ByteBuf byteBuf = Unpooled.buffer(1024);
+
+            byteBuf.writeBytes(new byte[]{(byte)0x12, 0x00, 0x00, 0x00});
+            byteBuf.writeBytes(length);
+            byteBuf.writeByte(mVerifyTool.verifyType().getType());
+            byteBuf.writeBytes(mVerifyTool.generateVerifyCode(statusBytes));
+            byteBuf.writeBytes(statusBytes);
+            byteBuf.writeByte((byte)0x24);
+
+            channelHandlerContext.writeAndFlush(byteBuf);
+            Log.d(TAG, "send dev status complete");
 
         } catch (JSONException e) {
             EventBus.getDefault().post(new ExceptionEvent(new Exception("")));
@@ -48,6 +63,6 @@ public class DevStatusHandler extends AbsHandler<BytesRequest> {
         }
 
 
-        return false;
+        return true;
     }
 }
