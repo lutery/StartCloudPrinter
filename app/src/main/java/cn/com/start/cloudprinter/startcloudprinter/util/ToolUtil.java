@@ -70,7 +70,8 @@ public class ToolUtil {
         if (type == VerifyType.CRC8.getType()){
             return 1;
         }
-        else if (type == VerifyType.CRC16.getType()){
+        else if (type == VerifyType.CRC16.getType() ||
+        type == VerifyType.CRCCCITT.getType()){
             return 2;
         }
         else if (type == VerifyType.CRC32.getType()){
