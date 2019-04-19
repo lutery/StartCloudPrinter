@@ -1,5 +1,7 @@
 package cn.com.start.cloudprinter.startcloudprinter.handler.netty;
 
+import android.util.Log;
+
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class DelimiterPrinterOrderFrameDecoder extends ByteToMessageDecoder {
+
+    private static final String TAG = DelimiterPrinterOrderFrameDecoder.class.getSimpleName();
 
     private int lengthOfOrder;
     private int lengthOfContent;
@@ -25,13 +29,14 @@ public class DelimiterPrinterOrderFrameDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
         Object order = this.decode(byteBuf);
-        if (order != null){
+        if (order != null) {
             list.add(order);
         }
     }
 
     protected Object decode(ByteBuf byteBuf){
         int length = byteBuf.readableBytes();
+        int startOfIndex = byteBuf.readerIndex();
         int endOfIndex = 0;
 
         int headerLength = this.lengthOfCheck + this.lengthOfContent + this.lengthOfOrder;
@@ -40,7 +45,7 @@ public class DelimiterPrinterOrderFrameDecoder extends ByteToMessageDecoder {
             return null;
         }
 
-        Byte verifyByte = byteBuf.getByte(8);
+        Byte verifyByte = byteBuf.getByte(startOfIndex + 8);
         int lengthOfVerifyType = ToolUtil.getVerifyTypeLength(verifyByte);
 
         if (length <= (headerLength + lengthOfVerifyType)){
@@ -48,7 +53,7 @@ public class DelimiterPrinterOrderFrameDecoder extends ByteToMessageDecoder {
         }
 
         byte[] lenthBytes = new byte[4];
-        byteBuf.getBytes(4, lenthBytes);
+        byteBuf.getBytes(startOfIndex + 4, lenthBytes);
 
         int jsonLength = ToolUtil.byteArray2Int(lenthBytes[3], lenthBytes[2], lenthBytes[1], lenthBytes[0]);
 
@@ -58,7 +63,7 @@ public class DelimiterPrinterOrderFrameDecoder extends ByteToMessageDecoder {
 
         endOfIndex = headerLength + lengthOfVerifyType + jsonLength;
 
-        if (this.endByte != byteBuf.getByte(endOfIndex)){
+        if (this.endByte != byteBuf.getByte(startOfIndex + endOfIndex)){
             //ToDo 这个问题很严重，得谨慎处理
             return null;
         }

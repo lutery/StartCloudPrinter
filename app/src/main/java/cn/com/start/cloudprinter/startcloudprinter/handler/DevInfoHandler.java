@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 
 import cn.com.start.cloudprinter.startcloudprinter.StartCloudApplication;
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
@@ -54,7 +55,12 @@ public class DevInfoHandler extends AbsHandler {
 
         byte[] devLength = ToolUtil.intToBytes(devInfoBytes.length);
 
-        byte[] verifyCode = ToolUtil.toCRC16Bytes(devInfoBytes);
+        byte[] verifyCode = new byte[0];
+        try {
+            verifyCode = mVerifyTool.generateVerifyCode(devInfoBytes);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 
         Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(devLength));
         Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(verifyCode));
@@ -63,7 +69,7 @@ public class DevInfoHandler extends AbsHandler {
         ByteBuf byteBuf = Unpooled.buffer(1024);
         byteBuf.writeBytes(PrinterOrder.DEVINFO.getOrder());
         byteBuf.writeBytes(devLength);
-        byteBuf.writeBytes(new byte[]{0x03});
+        byteBuf.writeBytes(new byte[]{0x05});
         byteBuf.writeBytes(verifyCode);
         byteBuf.writeBytes(devInfoBytes);
         byteBuf.writeBytes(new byte[]{0x24});

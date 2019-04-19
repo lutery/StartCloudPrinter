@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
 import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
+import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.channel.ChannelHandlerContext;
 
 public class ResultInfoHandler extends AbsHandler {
@@ -34,6 +35,7 @@ public class ResultInfoHandler extends AbsHandler {
             return true;
 
         } catch (JSONException e) {
+//            Log.d(TAG, ToolUtil.byte2HexStr(deviceOrder.combine()));
             e.printStackTrace();
             EventBus.getDefault().post(new ExceptionEvent(e));
         } catch (UnsupportedEncodingException e) {

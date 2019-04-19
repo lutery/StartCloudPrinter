@@ -66,8 +66,9 @@ public class PrinterService extends Service {
     private static Channel channel;
 
     // 服务器ip地址
-//    private final String mServerIP = "58.87.111.219";
-    private final String mServerIP = "192.168.2.101";
+    private final String mServerIP = "startprinter.com.cn";
+//    private final String mServerIP = "192.168.2.103";
+//    private final String mServerIP = "10.0.0.16";
 
     // 服务器端口
     private final int mServerPort = 9100;
@@ -123,7 +124,7 @@ public class PrinterService extends Service {
 
         byteBuf.writeBytes(PrinterOrder.DEVINIT.getOrder());
         byteBuf.writeBytes(new byte[]{0x00, 0x00, 0x00, 0x00});
-        byteBuf.writeBytes(new byte[]{0x03, 0x00, 0x00});
+        byteBuf.writeBytes(new byte[]{0x05, 0x00, 0x00});
         byteBuf.writeBytes(new byte[]{0x24});
 
         return byteBuf;

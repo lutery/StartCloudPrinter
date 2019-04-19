@@ -49,6 +49,11 @@ public class CRC16CCITTVerify implements IVerify {
 
     @Override
     public byte[] generateVerifyCode(byte[] content) {
+
+        if (content == null || content.length == 0){
+            return new byte[]{0x00, 0x00};
+        }
+
         int crc_reg = 0x0000;
         for (int i = 0; i < content.length; i++) {
             crc_reg =  CRC16_ccitt_table[(crc_reg ^ content[i]) & 0xFF] ^ (crc_reg >> 8);
