@@ -10,6 +10,8 @@ import java.io.UnsupportedEncodingException;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
+import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
+import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.channel.ChannelHandlerContext;
 
 public class PrnInfoHandler extends AbsHandler {
@@ -19,7 +21,7 @@ public class PrnInfoHandler extends AbsHandler {
     @Override
     protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (deviceOrder.getOrderType()[0] != 0x01){
+        if (deviceOrder.getOrderType()[0] != PrinterOrder.PRNINFO.getOrder()[0]){
             return false;
         }
 
@@ -30,6 +32,8 @@ public class PrnInfoHandler extends AbsHandler {
             int size = jsonPrnInfo.getInt("size");
 
             Log.d(TAG, "prnid is " + prnid + ", size is " + size);
+
+//            Log.d(TAG, ToolUtil.byte2HexStr(deviceOrder.combine()));
 
             return true;
 

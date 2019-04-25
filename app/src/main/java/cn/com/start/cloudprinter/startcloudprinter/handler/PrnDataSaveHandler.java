@@ -15,6 +15,7 @@ import cn.com.itep.printer.usb.UsbPrinter;
 import cn.com.start.cloudprinter.startcloudprinter.StartCloudApplication;
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
+import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.buffer.ByteBuf;
@@ -32,9 +33,11 @@ public class PrnDataSaveHandler extends AbsHandler {
     @Override
     protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (deviceOrder.getOrderType()[0] != (byte)0xf0){
+        if (deviceOrder.getOrderType()[0] != PrinterOrder.PRNDATA.getOrder()[0]){
             return false;
         }
+
+//        Log.d(TAG, ToolUtil.byte2HexStr(deviceOrder.combine()));
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         String date = simpleDateFormat.format(new Date());

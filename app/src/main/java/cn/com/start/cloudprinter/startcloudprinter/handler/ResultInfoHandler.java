@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
+import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,7 +22,7 @@ public class ResultInfoHandler extends AbsHandler {
     @Override
     protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (deviceOrder.getOrderType()[0] != 0x0f){
+        if (deviceOrder.getOrderType()[0] != PrinterOrder.RESULTINFO.getOrder()[0]){
             return false;
         }
 
@@ -31,6 +32,7 @@ public class ResultInfoHandler extends AbsHandler {
             String result = resultInfoObj.getString("result");
 
             Log.d(TAG, "result is " + result);
+//            Log.d(TAG, "device order is " + ToolUtil.byte2HexStr(deviceOrder.combine()));
 
             return true;
 

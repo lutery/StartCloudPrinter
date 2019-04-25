@@ -12,6 +12,7 @@ import java.util.Random;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
+import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.po.OrderObj;
 import cn.com.start.cloudprinter.startcloudprinter.util.DeviceStatus;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
@@ -26,7 +27,7 @@ public class DevStatusHandler extends AbsHandler{
     @Override
     protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (deviceOrder.getOrderType()[0] != (byte)0x12){
+        if (deviceOrder.getOrderType()[0] != PrinterOrder.GETSTATUS.getOrder()[0]){
             return false;
         }
 
@@ -44,7 +45,11 @@ public class DevStatusHandler extends AbsHandler{
 
             ByteBuf byteBuf = Unpooled.buffer(1024);
 
-            byteBuf.writeBytes(new byte[]{(byte)0x12, 0x00, 0x00, 0x00});
+            Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(length));
+            Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(mVerifyTool.generateVerifyCode(statusBytes)));
+            Log.d(TAG, "devInfoBytes = " + ToolUtil.byte2HexStr(statusBytes));
+
+            byteBuf.writeBytes(PrinterOrder.DEVSTATUS.getOrder());
             byteBuf.writeBytes(length);
             byteBuf.writeByte(mVerifyTool.verifyType().getType());
             byteBuf.writeBytes(mVerifyTool.generateVerifyCode(statusBytes));
@@ -52,7 +57,7 @@ public class DevStatusHandler extends AbsHandler{
             byteBuf.writeByte((byte)0x24);
 
             channelHandlerContext.writeAndFlush(byteBuf);
-            Log.d(TAG, "send dev status complete");
+            Log.d(TAG, "send dev status complete, code is " + ToolUtil.byte2HexStr(deviceOrder.combine()));
 
         } catch (JSONException e) {
             EventBus.getDefault().post(new ExceptionEvent(new Exception("")));

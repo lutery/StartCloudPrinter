@@ -31,7 +31,7 @@ public class DevInfoHandler extends AbsHandler {
     @Override
     protected boolean handle(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder) {
 
-        if (deviceOrder.getOrderType()[0] != (byte) 0x10) {
+        if (deviceOrder.getOrderType()[0] != PrinterOrder.GETDEVINFO.getOrder()[0]) {
             return false;
         }
 
