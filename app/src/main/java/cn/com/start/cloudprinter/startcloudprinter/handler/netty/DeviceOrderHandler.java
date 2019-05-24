@@ -74,15 +74,15 @@ public class DeviceOrderHandler extends SimpleChannelInboundHandler<DeviceOrder>
         super.userEventTriggered(ctx, evt);
     }
 
-    protected void sendHeartBeatMsg(ChannelHandlerContext ctx){
-        ByteBuf byteBuf = Unpooled.buffer(30);
-
-        byteBuf.writeBytes(new byte[]{(byte)0xff, 0x00, 0x00, 0x00});
-        byteBuf.writeBytes(new byte[]{0x00, 0x00, 0x00, 0x00});
-        byteBuf.writeBytes(new byte[]{0x03, 0x00, 0x00, 0x24});
-
-        ctx.writeAndFlush(byteBuf);
-    }
+//    protected void sendHeartBeatMsg(ChannelHandlerContext ctx){
+//        ByteBuf byteBuf = Unpooled.buffer(30);
+//
+//        byteBuf.writeBytes(new byte[]{(byte)0xff, 0x00, 0x00, 0x00});
+//        byteBuf.writeBytes(new byte[]{0x00, 0x00, 0x00, 0x00});
+//        byteBuf.writeBytes(new byte[]{0x03, 0x00, 0x00, 0x24});
+//
+//        ctx.writeAndFlush(byteBuf);
+//    }
 
     protected void handleReaderIdle(ChannelHandlerContext ctx){
         Log.d(TAG, "===Reader_IDLE===");

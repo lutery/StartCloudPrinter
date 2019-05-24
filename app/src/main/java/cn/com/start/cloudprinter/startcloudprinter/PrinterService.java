@@ -67,8 +67,8 @@ public class PrinterService extends Service {
 
     // 服务器ip地址
     private final String mServerIP = "startprinter.com.cn";
-//    private final String mServerIP = "192.168.2.103";
-//    private final String mServerIP = "10.0.0.16";
+//    private final String mServerIP = "192.168.2.102";
+//    private final String mServerIP = "10.0.0.5";
 
     // 服务器端口
     private final int mServerPort = 9100;
@@ -214,7 +214,7 @@ public class PrinterService extends Service {
         @Override
         protected void initChannel(SocketChannel ch) {
             ch.pipeline()
-                    .addLast(new IdleStateHandler(0, 0, 5))
+                    .addLast(new IdleStateHandler(0, 0, 30))
                     .addLast(new DelimiterPrinterOrderFrameDecoder(4, 4, 1, (byte)0x24))
                     .addLast(new DeviceOrderHandler());
         }

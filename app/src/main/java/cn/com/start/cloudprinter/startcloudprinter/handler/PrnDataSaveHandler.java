@@ -43,7 +43,25 @@ public class PrnDataSaveHandler extends AbsHandler {
         String date = simpleDateFormat.format(new Date());
 
         try {
+            if (!mVerifyTool.verifyContent(deviceOrder.getVerifyCode(), deviceOrder.getOrderContent())){
+                Log.d(TAG, "可打印数据校验失败");
+                return false;
+            }
+
+//            ToolUtil.byte2HexStr(mVerifyTool.generateVerifyCode(new byte[]{
+//                    0x1b, 0x40, 0x1b, 0x4a , 0x4b , 0x1b , 0x24 , 0x47 , 0x00 , 0x1d , 0x38 , 0x4c ,
+//                    0x62 , 0x00 , 0x00 , 0x00 , 0x30 , 0x70 , 0x30 , 0x01 , 0x01 , 0x31 , 0x54 , 0x00 , 0x08 ,
+//                    0x00 , 0x0e , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , (byte)0xc0 ,
+//                    0x3f , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x03 , (byte)0xc0 , 0x00 , 0x03 , (byte)0xe0 ,
+//                    0x3f , (byte)0x80 , 0x00 , 0x18 , 0x00 , 0x00 , 0x07 , (byte)0xe0 , 0x00 , 0x07 , (byte)0xf0 , 0x7f ,
+//                    (byte)0x80 , 0x00 , 0x7e , 0x00 , 0x00 , 0x0f , (byte)0xf0 , 0x00 , 0x07 , (byte)0xf0 , 0x7f ,
+//                    (byte)0x80 , 0x00 , 0x7e , 0x00 , 0x00 , 0x0f , (byte)0xf0 , 0x00}));
             Log.d(TAG, ToolUtil.byte2HexStr(deviceOrder.getOrderContent()));
+            File prnDir = new File("/sdcard/cloudprinter/");
+            if (!prnDir.exists()){
+                prnDir.mkdirs();
+            }
+
             String prnFilePath = new StringBuilder().append("/sdcard/cloudprinter/").append(date).append(".prn").toString();
             Log.d(TAG, prnFilePath);
             File prnFile = new File(prnFilePath);
@@ -55,9 +73,12 @@ public class PrnDataSaveHandler extends AbsHandler {
 
             OutputStream outputStream = new FileOutputStream(prnFile);
 
-            outputStream.write(deviceOrder.getOrderContent());
+//            outputStream.write(deviceOrder.getOrderContent());
+            outputStream.write(deviceOrder.combine());
             outputStream.flush();
             outputStream.close();
+
+            Log.d(TAG, "Prn Data Save Complete");
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -37,9 +37,14 @@ public class DevInfoHandler extends AbsHandler {
 
         String devId = ToolUtil.getUniqueId(StartCloudApplication.getSContext());
 
+        Log.d(TAG, "devId is " + devId);
+
         JSONObject devJson = new JSONObject();
         try {
             devJson.put("deviceid", devId);
+            devJson.put("driver", "GS8L");
+            devJson.put("page", "76X96");
+            devJson.put("resolution", "203X203");
         } catch (JSONException e) {
             e.printStackTrace();
         }
