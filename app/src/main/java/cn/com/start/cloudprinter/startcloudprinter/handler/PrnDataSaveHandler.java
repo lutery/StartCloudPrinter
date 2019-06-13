@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 import cn.com.itep.printer.usb.UsbPrinter;
 import cn.com.start.cloudprinter.startcloudprinter.StartCloudApplication;
@@ -39,14 +40,27 @@ public class PrnDataSaveHandler extends AbsHandler {
 
 //        Log.d(TAG, ToolUtil.byte2HexStr(deviceOrder.combine()));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss_SSS");
         String date = simpleDateFormat.format(new Date());
 
+        String toResult = "ok";
         try {
             if (!mVerifyTool.verifyContent(deviceOrder.getVerifyCode(), deviceOrder.getOrderContent())){
+                toResult = "failed";
                 Log.d(TAG, "可打印数据校验失败");
-                return false;
+                throw new IOException("可打印数据校验失败，请求服务器重新发送数据");
             }
+
+            if ((new Random(System.currentTimeMillis()).nextInt(100)) <= 20){
+                toResult = "failed";
+                Log.d(TAG, "网络发生波动，请服务器重新发送数据");
+                throw new IOException("网络发生波动，请服务器重新发送数据");
+            }
+
+            Log.d(TAG, "开始睡眠");
+            Thread.sleep(new Random(System.currentTimeMillis()).nextInt(20) * 1000);
+            Log.d(TAG, "结束睡眠");
+
 
 //            ToolUtil.byte2HexStr(mVerifyTool.generateVerifyCode(new byte[]{
 //                    0x1b, 0x40, 0x1b, 0x4a , 0x4b , 0x1b , 0x24 , 0x47 , 0x00 , 0x1d , 0x38 , 0x4c ,
@@ -73,18 +87,23 @@ public class PrnDataSaveHandler extends AbsHandler {
 
             OutputStream outputStream = new FileOutputStream(prnFile);
 
-//            outputStream.write(deviceOrder.getOrderContent());
-            outputStream.write(deviceOrder.combine());
+            outputStream.write(deviceOrder.getOrderContent());
+//            outputStream.write(deviceOrder.combine());
             outputStream.flush();
             outputStream.close();
 
             Log.d(TAG, "Prn Data Save Complete");
 
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
         ByteBuf byteBuf = Unpooled.buffer(1024);
-        byteBuf.writeBytes(ToolUtil.getResultMsg("ok", mVerifyTool));
+//        byteBuf.writeBytes(ToolUtil.getResultMsg("ok", mVerifyTool));
+        byteBuf.writeBytes(ToolUtil.getResultMsg(toResult, mVerifyTool));
 
         channelHandlerContext.writeAndFlush(byteBuf);
 

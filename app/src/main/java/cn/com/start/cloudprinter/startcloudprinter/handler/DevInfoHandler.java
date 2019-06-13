@@ -42,9 +42,11 @@ public class DevInfoHandler extends AbsHandler {
         JSONObject devJson = new JSONObject();
         try {
             devJson.put("deviceid", devId);
-            devJson.put("driver", "GS8L");
-            devJson.put("page", "76X96");
+            devJson.put("driver", "ZPL");
+            devJson.put("page", "80X200");
             devJson.put("resolution", "203X203");
+//            devJson.put("packageSize", 1024 * 1024 * 9);
+//            devJson.put("packageSize", 1024);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -53,7 +55,7 @@ public class DevInfoHandler extends AbsHandler {
 
         byte[] devInfoBytes = new byte[0];
         try {
-            devInfoBytes = devStr.getBytes("utf-8");
+            devInfoBytes = devStr.getBytes("gb18030");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

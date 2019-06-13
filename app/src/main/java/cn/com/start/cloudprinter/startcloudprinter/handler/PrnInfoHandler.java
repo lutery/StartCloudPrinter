@@ -12,6 +12,8 @@ import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrder;
 import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 
 public class PrnInfoHandler extends AbsHandler {
@@ -30,12 +32,11 @@ public class PrnInfoHandler extends AbsHandler {
 
             String prnid = jsonPrnInfo.getString("prnid");
             int size = jsonPrnInfo.getInt("size");
+            int packageS = jsonPrnInfo.getInt("packages");
 
-            Log.d(TAG, "prnid is " + prnid + ", size is " + size);
+            Log.d(TAG, "prnid is " + prnid + ", size is " + size + ", packageS is " + packageS);
 
 //            Log.d(TAG, ToolUtil.byte2HexStr(deviceOrder.combine()));
-
-            return true;
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -45,6 +46,12 @@ public class PrnInfoHandler extends AbsHandler {
             EventBus.getDefault().post(new ExceptionEvent(e));
         }
 
-        return false;
+        ByteBuf byteBuf = Unpooled.buffer(1024);
+//        byteBuf.writeBytes(ToolUtil.getResultMsg("ok", mVerifyTool));
+        byteBuf.writeBytes(ToolUtil.getResultMsg("ok", mVerifyTool));
+
+        channelHandlerContext.writeAndFlush(byteBuf);
+
+        return true;
     }
 }

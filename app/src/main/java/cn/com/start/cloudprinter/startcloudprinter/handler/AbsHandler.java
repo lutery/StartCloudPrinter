@@ -1,5 +1,7 @@
 package cn.com.start.cloudprinter.startcloudprinter.handler;
 
+import android.util.Log;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.ByteArrayInputStream;
@@ -27,12 +29,16 @@ import lombok.Data;
 @Data
 public abstract class AbsHandler {
 
+    private static final String TAG = AbsHandler.class.getSimpleName();
+
     protected AbsHandler mNextHandler;
     protected InputStream inputStream;
     protected IVerify mVerifyTool = new CRC16CCITTVerify();
     protected Channel mChannel;
 
     public final void handleRequest(ChannelHandlerContext channelHandlerContext, DeviceOrder deviceOrder){
+        Log.d(TAG, "handle request");
+
         mChannel = PrinterService.getChannel();
         if (this.handle(channelHandlerContext, deviceOrder)){
             return;

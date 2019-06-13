@@ -66,8 +66,10 @@ public class PrinterService extends Service {
     private static Channel channel;
 
     // 服务器ip地址
-    private final String mServerIP = "startprinter.com.cn";
+//    private final String mServerIP = "startprinter.com.cn";
+    private final String mServerIP = "192.168.2.105";
 //    private final String mServerIP = "192.168.2.102";
+//    private final String mServerIP = "172.20.10.2";
 //    private final String mServerIP = "10.0.0.5";
 
     // 服务器端口
