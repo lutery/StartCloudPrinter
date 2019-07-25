@@ -8,6 +8,7 @@ import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.iv_device_id)ImageView mIVDeviceID;
     @BindView(R.id.tv_tip)TextView mTVTip;
+    @BindView(R.id.reset)Button mResetBtn;
+    @BindView(R.id.weight)Button mWeightBtn;
 
     private Handler mHandlerUI;
 
@@ -73,5 +76,16 @@ public class MainActivity extends AppCompatActivity {
                 usbPrinter.openDevice(usbPrinter.getDevice(0));
             }
         }
+
+        mResetBtn.setOnClickListener(view->{
+//            Intent intent1 = new Intent(this, PrinterService.class);
+            intent.putExtra("ttype", 1);
+            startService(intent);
+        });
+
+        mWeightBtn.setOnClickListener(view -> {
+            intent.putExtra("ttype", 2);
+            startService(intent);
+        });
     }
 }

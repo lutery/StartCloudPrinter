@@ -15,17 +15,27 @@ import android.widget.RemoteViews;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Random;
 import java.util.concurrent.Executors;
 
 import cn.com.start.cloudprinter.startcloudprinter.event.ExceptionEvent;
 import cn.com.start.cloudprinter.startcloudprinter.event.GeneralEvent;
 import cn.com.start.cloudprinter.startcloudprinter.event.PrintEvent;
+import cn.com.start.cloudprinter.startcloudprinter.handler.DevInfoHandler;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DelimiterPrinterOrderFrameDecoder;
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrderHandler;
 import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
+import cn.com.start.cloudprinter.startcloudprinter.tool.verify.impl.CRC16CCITTVerify;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -67,10 +77,11 @@ public class PrinterService extends Service {
 
     // 服务器ip地址
 //    private final String mServerIP = "startprinter.com.cn";
-    private final String mServerIP = "192.168.2.105";
-//    private final String mServerIP = "192.168.2.102";
+//    private final String mServerIP = "192.168.2.105";
+//    private final String mServerIP = "192.168.2.109";
+//    private final String mServerIP = "192.168.66.68";
 //    private final String mServerIP = "172.20.10.2";
-//    private final String mServerIP = "10.0.0.5";
+    private final String mServerIP = "10.0.0.8";
 
     // 服务器端口
     private final int mServerPort = 9100;
@@ -89,9 +100,28 @@ public class PrinterService extends Service {
                     e.printStackTrace();
                 }
         });
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                Thread.sleep(5000);
+
+                initWebSocket();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
         EventBus.getDefault().register(this);
 
         showNotification();
+    }
+
+    private void initWebSocket() throws URISyntaxException {
+        SubcribeClient subcribeClient = new SubcribeClient(new URI("ws://10.0.0.8:8080/printer/subscribe?devId=536a92b1b4fdd5341ade2b4d7779e8af"), new HashMap<String, String>(){
+            {put("Authorization", "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJsdXRlcnkiLCJzY29wZSI6WyJhbGwiXSwiY29tcGFueSI6InN0YXJ0IiwiZXhwIjoxNTY0MTA2NzU1LCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIiwiUk9MRV9QUklOVEVSIl0sImp0aSI6IjlkMTgxMDNkLWM0MmItNGQyZC04YTdkLTYxOTBiYjA2N2U1MyIsImNsaWVudF9pZCI6ImNsb3VkcHJpbnRlciJ9.o7L8kzOkSK0X3gGckFdOcybfM-paB7MvzOMq9UOiv4g");}
+        });
+        subcribeClient.connect();
     }
 
     private void initNetty() throws InterruptedException {
@@ -121,12 +151,103 @@ public class PrinterService extends Service {
     }
 
     private ByteBuf sendDevInit() {
-        ByteBuf byteBuf = Unpooled.buffer(32);
-        Log.d(TAG, "DEVINIT order = " + ToolUtil.byte2HexStr(PrinterOrder.DEVINIT.getOrder()));
+//        ByteBuf byteBuf = Unpooled.buffer(32);
+//        Log.d(TAG, "DEVINIT order = " + ToolUtil.byte2HexStr(PrinterOrder.DEVINIT.getOrder()));
+//
+//        byteBuf.writeBytes(PrinterOrder.DEVINIT.getOrder());
+//        byteBuf.writeBytes(new byte[]{0x00, 0x00, 0x00, 0x00});
+//        byteBuf.writeBytes(new byte[]{0x05, 0x00, 0x00});
+//        byteBuf.writeBytes(new byte[]{0x24});
+//
+//        return byteBuf;
 
-        byteBuf.writeBytes(PrinterOrder.DEVINIT.getOrder());
-        byteBuf.writeBytes(new byte[]{0x00, 0x00, 0x00, 0x00});
-        byteBuf.writeBytes(new byte[]{0x05, 0x00, 0x00});
+        String devId = ToolUtil.getUniqueId(StartCloudApplication.getSContext());
+
+        Log.d(TAG, "devId is " + devId);
+
+        JSONObject devJson = new JSONObject();
+        try {
+            devJson.put("deviceid", devId);
+
+//            if (new Random().nextInt(100) < 50) {
+                devJson.put("driver", "ZPLCut");
+                devJson.put("page", "300X600");
+                devJson.put("resolution", "300X300");
+//            }
+//            else {
+//                devJson.put("driver", "ESC");
+//                devJson.put("page", "210X297");
+//                devJson.put("resolution", "180X180");
+//            }
+//            devJson.put("packageSize", 1024 * 1024 * 9);
+            devJson.put("packageSize", 4096);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String devStr = devJson.toString();
+        Log.d(TAG, "devStr is " + devStr);
+
+        byte[] devInfoBytes = new byte[0];
+        try {
+            devInfoBytes = devStr.getBytes("gb18030");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        byte[] devLength = ToolUtil.intToBytes(devInfoBytes.length);
+
+        byte[] verifyCode = new CRC16CCITTVerify().generateVerifyCode(devInfoBytes);
+
+        Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(devLength));
+        Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(verifyCode));
+        Log.d(TAG, "devInfoBytes = " + ToolUtil.byte2HexStr(devInfoBytes));
+
+        ByteBuf byteBuf = Unpooled.buffer(1024);
+        byteBuf.writeBytes(PrinterOrder.DEVINFO.getOrder());
+        byteBuf.writeBytes(devLength);
+        byteBuf.writeBytes(new byte[]{0x05});
+        byteBuf.writeBytes(verifyCode);
+        byteBuf.writeBytes(devInfoBytes);
+        byteBuf.writeBytes(new byte[]{0x24});
+
+        return byteBuf;
+    }
+
+    private ByteBuf sendWeightInfo(){
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("indentinfo", "1163545004693");
+            jsonObject.put("weight", String.valueOf(new Random().nextFloat()));
+//            jsonObject.put("weight", "a");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String devStr = jsonObject.toString();
+        Log.d(TAG, "devStr is " + devStr);
+
+        byte[] weightInfoBytes = new byte[0];
+        try {
+            weightInfoBytes = devStr.getBytes("gb18030");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        byte[] devLength = ToolUtil.intToBytes(weightInfoBytes.length);
+
+        byte[] verifyCode = new CRC16CCITTVerify().generateVerifyCode(weightInfoBytes);
+
+        Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(devLength));
+        Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(verifyCode));
+        Log.d(TAG, "devInfoBytes = " + ToolUtil.byte2HexStr(weightInfoBytes));
+
+        ByteBuf byteBuf = Unpooled.buffer(1024);
+        byteBuf.writeBytes(PrinterOrder.WEIGHTINFO.getOrder());
+        byteBuf.writeBytes(devLength);
+        byteBuf.writeBytes(new byte[]{0x05});
+        byteBuf.writeBytes(verifyCode);
+        byteBuf.writeBytes(weightInfoBytes);
         byteBuf.writeBytes(new byte[]{0x24});
 
         return byteBuf;
@@ -135,6 +256,17 @@ public class PrinterService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(CHANNEL_ID, "onStartCommand");
+
+        if (channel != null) {
+
+            if (intent.getIntExtra("ttype", 0) == 1) {
+                channel.writeAndFlush(sendDevInit());
+            }
+            else if (intent.getIntExtra("ttype", 0) == 2){
+                channel.writeAndFlush(sendWeightInfo());
+            }
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -142,6 +274,7 @@ public class PrinterService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+        Log.d(TAG, "service destory");
         EventBus.getDefault().unregister(this);
     }
 
