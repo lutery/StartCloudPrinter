@@ -45,17 +45,17 @@ public class PrnDataSaveHandler extends AbsHandler {
 
         String toResult = "ok";
         try {
-//            if (!mVerifyTool.verifyContent(deviceOrder.getVerifyCode(), deviceOrder.getOrderContent())){
-//                toResult = "failed";
-//                Log.d(TAG, "可打印数据校验失败");
-//                throw new IOException("可打印数据校验失败，请求服务器重新发送数据");
-//            }
-//
-//            if ((new Random(System.currentTimeMillis()).nextInt(100)) <= 10){
-//                toResult = "failed";
-//                Log.d(TAG, "网络发生波动，请服务器重新发送数据");
-//                throw new IOException("网络发生波动，请服务器重新发送数据");
-//            }
+            if (!mVerifyTool.verifyContent(deviceOrder.getVerifyCode(), deviceOrder.getOrderContent())){
+                toResult = "failed";
+                Log.d(TAG, "可打印数据校验失败");
+                throw new IOException("可打印数据校验失败，请求服务器重新发送数据");
+            }
+
+            if ((new Random(System.currentTimeMillis()).nextInt(100)) <= 10){
+                toResult = "failed";
+                Log.d(TAG, "网络发生波动，请服务器重新发送数据");
+                throw new IOException("网络发生波动，请服务器重新发送数据");
+            }
 
             Log.d(TAG, "开始睡眠");
             Thread.sleep(new Random(System.currentTimeMillis()).nextInt(9) * 100000);
