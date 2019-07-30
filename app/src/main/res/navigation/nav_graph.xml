@@ -2,4 +2,29 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/nav_graph" />
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/configFragment2">
+    <fragment
+        android:id="@+id/configFragment2"
+        android:name="cn.com.start.cloudprinter.startcloudprinter.fragment.ConfigFragment"
+        android:label="fragment_config"
+        tools:layout="@layout/fragment_config" >
+        <action
+            android:id="@+id/action_configFragment2_to_devsFragment2"
+            app:destination="@id/devsFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/devsFragment2"
+        android:name="cn.com.start.cloudprinter.startcloudprinter.fragment.DevsFragment"
+        android:label="devs_fragment"
+        tools:layout="@layout/devs_fragment" >
+        <action
+            android:id="@+id/action_devsFragment2_to_devFragment2"
+            app:destination="@id/devFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/devFragment2"
+        android:name="cn.com.start.cloudprinter.startcloudprinter.fragment.DevFragment"
+        android:label="fragment_dev"
+        tools:layout="@layout/fragment_dev" />
+</navigation>
