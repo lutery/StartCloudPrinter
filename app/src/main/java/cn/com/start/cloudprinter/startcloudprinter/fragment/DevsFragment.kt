@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 
 import cn.com.start.cloudprinter.startcloudprinter.R
@@ -28,14 +30,16 @@ class DevsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(DevsViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(DevsViewModel::class.java)
         // TODO: Use the ViewModel
+        val ip = arguments?.getString("ip")
+        val port = arguments?.getString("port")
+        val number = arguments?.getInt("number")
+
+        Toast.makeText(context, "ip ${ip}, port ${port}, number ${number}", Toast.LENGTH_LONG).show()
 
         fab.setOnClickListener { v ->
-            fab.setOnClickListener { v ->
-                Navigation.findNavController(v).navigate(R.id.action_devsFragment2_to_devFragment2)
-            }
+            Navigation.findNavController(v).navigate(R.id.action_devsFragment2_to_devFragment2)
         }
     }
-
 }

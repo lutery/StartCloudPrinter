@@ -1,6 +1,7 @@
 package cn.com.start.cloudprinter.startcloudprinter.fragment
 
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -32,8 +33,16 @@ class ConfigFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         fab.setOnClickListener { v ->
-            Navigation.findNavController(v).navigate(R.id.action_configFragment2_to_devsFragment2)
+            var bundle = Bundle()
+            bundle.putString("ip", etAddress.text.toString())
+            bundle.putString("port", etPort.text.toString())
+            bundle.putInt("number", etnumber.text.toString().toInt())
+            Navigation.findNavController(v).navigate(R.id.action_configFragment2_to_devsFragment2, bundle)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
 }

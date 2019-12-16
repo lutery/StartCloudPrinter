@@ -3,6 +3,8 @@ package cn.com.start.cloudprinter.startcloudprinter;
 import android.app.Application;
 import android.content.Context;
 
+import androidx.multidex.MultiDex;
+
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
@@ -24,5 +26,7 @@ public class StartCloudApplication extends Application {
         sContext = getApplicationContext();
 
         Logger.addLogAdapter(new AndroidLogAdapter());
+
+        MultiDex.install(this);
     }
 }

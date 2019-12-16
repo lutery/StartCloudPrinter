@@ -72,6 +72,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginRight="32dp"
+        android:inputType="number"
         app:layout_constraintBaseline_toBaselineOf="@id/devnumber"
         app:layout_constraintLeft_toRightOf="@id/devnumber"
         app:layout_constraintRight_toRightOf="parent" />

@@ -76,12 +76,13 @@ public class PrinterService extends Service {
     private static Channel channel;
 
     // 服务器ip地址
-    private final String mServerIP = "startprinter.com.cn";
+//    private final String mServerIP = "hua.test.print.startprinter.com.cn";
+//    private final String mServerIP = "startprinter.com.cn";
 //    private final String mServerIP = "192.168.2.105";
 //    private final String mServerIP = "192.168.2.109";
-//    private final String mServerIP = "192.168.66.68";
-//    private final String mServerIP = "172.20.10.2";
-//    private final String mServerIP = "10.0.0.3";
+//    private final String mServerIP = "192.168.66.72";
+//    private final String mServerIP = "172.20.10.8";
+    private final String mServerIP = "10.0.0.5";
 
     // 服务器端口
     private final int mServerPort = 9100;
@@ -118,8 +119,12 @@ public class PrinterService extends Service {
     }
 
     private void initWebSocket() throws URISyntaxException {
-        SubcribeClient subcribeClient = new SubcribeClient(new URI("ws://10.0.0.8:8080/printer/subscribe?devId=536a92b1b4fdd5341ade2b4d7779e8af"), new HashMap<String, String>(){
-            {put("Authorization", "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJsdXRlcnkiLCJzY29wZSI6WyJhbGwiXSwiY29tcGFueSI6InN0YXJ0IiwiZXhwIjoxNTY0MTA2NzU1LCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIiwiUk9MRV9QUklOVEVSIl0sImp0aSI6IjlkMTgxMDNkLWM0MmItNGQyZC04YTdkLTYxOTBiYjA2N2U1MyIsImNsaWVudF9pZCI6ImNsb3VkcHJpbnRlciJ9.o7L8kzOkSK0X3gGckFdOcybfM-paB7MvzOMq9UOiv4g");}
+//        SubcribeClient subcribeClient = new SubcribeClient(new URI("ws://10.0.0.8:8080/printer/subscribe?devId=536a92b1b4fdd5341ade2b4d7779e8af"), new HashMap<String, String>(){
+//            {put("Authorization", "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJsdXRlcnkiLCJzY29wZSI6WyJhbGwiXSwiY29tcGFueSI6InN0YXJ0IiwiZXhwIjoxNTY0MTA2NzU1LCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIiwiUk9MRV9QUklOVEVSIl0sImp0aSI6IjlkMTgxMDNkLWM0MmItNGQyZC04YTdkLTYxOTBiYjA2N2U1MyIsImNsaWVudF9pZCI6ImNsb3VkcHJpbnRlciJ9.o7L8kzOkSK0X3gGckFdOcybfM-paB7MvzOMq9UOiv4g");}
+//        });
+
+        SubcribeClient subcribeClient = new SubcribeClient(new URI("ws://print.startprinter.com.cn/printer/subscribe?devId=536a92b1b4fdd5341ade2b4d7779e8af"), new HashMap<String, String>(){
+            {put("Authorization", "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJsdXRlcnkiLCJzY29wZSI6WyJhbGwiXSwiY29tcGFueSI6InN0YXJ0IiwiZXhwIjoxNTY1MjI4MzY3LCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIiwiUk9MRV9QUklOVEVSIl0sImp0aSI6IjQyNTg3Y2M0LTQzMmItNGNjOC05ZmVmLTQ1NGZkMWZkMTIyZiIsImNsaWVudF9pZCI6ImNsb3VkcHJpbnRlciJ9.CM2PeerMqCeMZnfZ5UdlWBpK0QKCFfw2iKy12IImirI");}
         });
         subcribeClient.connect();
     }

@@ -22,5 +22,4 @@ class DevActivity : AppCompatActivity() {
 
         return NavHostFragment.findNavController(fragment!!).navigateUp();
     }
-
 }

@@ -43,7 +43,8 @@ public class PrnDataSaveHandler extends AbsHandler {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss_SSS");
         String date = simpleDateFormat.format(new Date());
 
-        String toResult = "ok";
+        String toResult =
+                "ok";
         try {
             if (!mVerifyTool.verifyContent(deviceOrder.getVerifyCode(), deviceOrder.getOrderContent())){
                 toResult = "failed";
@@ -51,14 +52,14 @@ public class PrnDataSaveHandler extends AbsHandler {
                 throw new IOException("可打印数据校验失败，请求服务器重新发送数据");
             }
 
-            if ((new Random(System.currentTimeMillis()).nextInt(100)) <= 10){
+            if (false && (new Random(System.currentTimeMillis()).nextInt(100)) <= 10){
                 toResult = "failed";
                 Log.d(TAG, "网络发生波动，请服务器重新发送数据");
                 throw new IOException("网络发生波动，请服务器重新发送数据");
             }
 
             Log.d(TAG, "开始睡眠");
-            Thread.sleep(new Random(System.currentTimeMillis()).nextInt(9) * 100000);
+//            Thread.sleep(new Random(System.currentTimeMillis()).nextInt(9) * 1000);
             Log.d(TAG, "结束睡眠");
 
 
@@ -98,9 +99,9 @@ public class PrnDataSaveHandler extends AbsHandler {
         catch (IOException e) {
             e.printStackTrace();
         }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         ByteBuf byteBuf = Unpooled.buffer(1024);
 //        byteBuf.writeBytes(ToolUtil.getResultMsg("ok", mVerifyTool));
         byteBuf.writeBytes(ToolUtil.getResultMsg(toResult, mVerifyTool));
