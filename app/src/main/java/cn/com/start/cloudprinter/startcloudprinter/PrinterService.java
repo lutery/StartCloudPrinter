@@ -36,6 +36,7 @@ import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DelimiterPrinte
 import cn.com.start.cloudprinter.startcloudprinter.handler.netty.DeviceOrderHandler;
 import cn.com.start.cloudprinter.startcloudprinter.order.PrinterOrder;
 import cn.com.start.cloudprinter.startcloudprinter.tool.verify.impl.CRC16CCITTVerify;
+import cn.com.start.cloudprinter.startcloudprinter.util.DeviceStatus;
 import cn.com.start.cloudprinter.startcloudprinter.util.ToolUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -76,16 +77,18 @@ public class PrinterService extends Service {
     private static Channel channel;
 
     // 服务器ip地址
-//    private final String mServerIP = "hua.test.print.startprinter.com.cn";
+//    private final String mServerIP = "test.print.startprinter.com.cn";
 //    private final String mServerIP = "startprinter.com.cn";
-//    private final String mServerIP = "192.168.2.105";
+//    private final String mServerIP = "192.168.227.3";
 //    private final String mServerIP = "192.168.2.109";
 //    private final String mServerIP = "192.168.66.72";
 //    private final String mServerIP = "172.20.10.8";
-    private final String mServerIP = "10.0.0.5";
+//    private final String mServerIP = "10.0.0.23";
+    private final String mServerIP = "192.168.101.3";
 
     // 服务器端口
     private final int mServerPort = 9100;
+//    private final int mServerPort = 9101;
 
     @Override
     public void onCreate() {
@@ -155,6 +158,34 @@ public class PrinterService extends Service {
         channelFuture.channel().closeFuture().sync();
     }
 
+    private ByteBuf sendDevStatus() throws JSONException, UnsupportedEncodingException {
+        DeviceStatus[] deviceStatuses = DeviceStatus.values();
+        DeviceStatus deviceStatus = deviceStatuses[new Random().nextInt(deviceStatuses.length)];
+
+        JSONObject statusObj = new JSONObject();
+        statusObj.put("status", deviceStatus.getCode());
+
+        String statusStr = statusObj.toString();
+
+        byte[] statusBytes= statusStr.getBytes("gb18030");
+        byte[] length = ToolUtil.intToBytes(statusBytes.length);
+
+        ByteBuf byteBuf = Unpooled.buffer(1024);
+
+        Log.d(TAG, "devLength = " + ToolUtil.byte2HexStr(length));
+        Log.d(TAG, "verifyCode = " + ToolUtil.byte2HexStr(new CRC16CCITTVerify().generateVerifyCode(statusBytes)));
+        Log.d(TAG, "devInfoBytes = " + ToolUtil.byte2HexStr(statusBytes));
+
+        byteBuf.writeBytes(PrinterOrder.DEVSTATUS.getOrder());
+        byteBuf.writeBytes(length);
+        byteBuf.writeByte(new CRC16CCITTVerify().verifyType().getType());
+        byteBuf.writeBytes(new CRC16CCITTVerify().generateVerifyCode(statusBytes));
+        byteBuf.writeBytes(statusBytes);
+        byteBuf.writeByte((byte)0x24);
+
+        return byteBuf;
+    }
+
     private ByteBuf sendDevInit() {
 //        ByteBuf byteBuf = Unpooled.buffer(32);
 //        Log.d(TAG, "DEVINIT order = " + ToolUtil.byte2HexStr(PrinterOrder.DEVINIT.getOrder()));
@@ -175,14 +206,14 @@ public class PrinterService extends Service {
             devJson.put("deviceid", devId);
 
 //            if (new Random().nextInt(100) < 50) {
-                devJson.put("driver", "ZPLCut");
-                devJson.put("page", "300X600");
-                devJson.put("resolution", "300X300");
+//                devJson.put("driver", "ZPL");
+//                devJson.put("page", "100X180");
+//                devJson.put("resolution", "203X203");
 //            }
 //            else {
-//                devJson.put("driver", "ESC");
-//                devJson.put("page", "210X297");
-//                devJson.put("resolution", "180X180");
+                devJson.put("driver", "ESC");
+                devJson.put("page", "210X297");
+                devJson.put("resolution", "180X180");
 //            }
 //            devJson.put("packageSize", 1024 * 1024 * 9);
             devJson.put("packageSize", 4096);
@@ -215,6 +246,14 @@ public class PrinterService extends Service {
         byteBuf.writeBytes(verifyCode);
         byteBuf.writeBytes(devInfoBytes);
         byteBuf.writeBytes(new byte[]{0x24});
+
+        return byteBuf;
+    }
+
+    private ByteBuf sendLogout(){
+        ByteBuf byteBuf = Unpooled.buffer(32);
+        byteBuf.writeBytes(PrinterOrder.LOGOUT.getOrder());
+        byteBuf.writeBytes(new byte[]{00, 00, 00, 00, 05, 00, 00, 0x24});
 
         return byteBuf;
     }
@@ -269,6 +308,18 @@ public class PrinterService extends Service {
             }
             else if (intent.getIntExtra("ttype", 0) == 2){
                 channel.writeAndFlush(sendWeightInfo());
+            }
+            else if (intent.getIntExtra("ttype", 0) == 3){
+                channel.writeAndFlush(sendLogout());
+            }
+            else if (intent.getIntExtra("ttype", 0) == 4){
+                try {
+                    channel.writeAndFlush(sendDevStatus());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

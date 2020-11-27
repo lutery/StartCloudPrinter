@@ -40,19 +40,50 @@
         android:id="@+id/reset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tv_tip"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="RESET"
         app:layout_constraintEnd_toEndOf="@id/weight"
-        android:text="RESET"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_tip" />
 
     <Button
         android:id="@+id/weight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tv_tip"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="WEIGHT"
+        app:layout_constraintEnd_toEndOf="@id/logout"
         app:layout_constraintStart_toStartOf="@id/reset"
-        android:text="WEIGHT"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_tip" />
+
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="LOGOUT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/weight"
+        app:layout_constraintTop_toBottomOf="@id/tv_tip" />
+
+    <Button
+        android:id="@+id/staus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="SWITCH STATUS"
+        app:layout_constraintStart_toStartOf="@id/reset"
+        app:layout_constraintTop_toBottomOf="@id/reset" />
 
     <!--<Button-->
         <!--android:id="@+id/SubcribeTask"-->

@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.tv_tip)TextView mTVTip;
     @BindView(R.id.reset)Button mResetBtn;
     @BindView(R.id.weight)Button mWeightBtn;
+    @BindView(R.id.logout)Button mLogOutBtn;
+    @BindView(R.id.staus)Button mStatusBtn;
 
     private Handler mHandlerUI;
 
@@ -85,6 +87,16 @@ public class MainActivity extends AppCompatActivity {
 
         mWeightBtn.setOnClickListener(view -> {
             intent.putExtra("ttype", 2);
+            startService(intent);
+        });
+
+        mLogOutBtn.setOnClickListener( view -> {
+            intent.putExtra("ttype", 3);
+            startService(intent);
+        });
+
+        mStatusBtn.setOnClickListener( view -> {
+            intent.putExtra("ttype", 4);
             startService(intent);
         });
     }

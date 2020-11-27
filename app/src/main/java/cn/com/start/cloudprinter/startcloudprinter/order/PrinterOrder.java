@@ -17,6 +17,7 @@ public enum PrinterOrder {
     HEARTBEAT((byte)0xff, (byte)0x00, (byte)0x00, (byte)0x00),
     RESULTINFO((byte)0x0f, (byte)0x00, (byte)0x00, (byte)0x00),
     WEIGHTINFO((byte)0xd1, (byte)0x00, (byte)0x00, (byte)0x00),
+    LOGOUT((byte)0xdc, (byte)0x00, (byte)0x00, (byte)0x00),
     ;
 
     private byte[] order = new byte[4];
